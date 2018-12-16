@@ -2,35 +2,26 @@ import os
 import sqlite3
 import shutil
 
-# DB file names
-dbNameSafari = 'History.db'
-dbNameFirefox = 'places.sqlite'
+safariDatabaseFilename = 'History.db'
+safariHistoryDatabasePath = os.path.expanduser('~') + '/Library/Safari/'
+safariHistoryDatabaseCopyPath = os.path.join('.', safariDatabaseFilename)
 
-# get path to Safari history database
-dataPathSafari = os.path.expanduser('~') + '/Library/Safari/'
-# get copied path to Safari history database
-dataPathCopySafari = os.path.join('.', dbNameSafari)
+firefoxDatabaseFilename = 'places.sqlite'
+firefoxHistoryDatabasePath = os.path.expanduser('~') + '/Library/Application Support/Firefox/Profiles/'
+firefoxHistoryDatabasePath += os.listdir(firefoxHistoryDatabasePath)[0]
+firefoxHistoryDatabaseCopyPath = os.path.join('.', firefoxDatabaseFilename)
 
-# get path to Firefox history database for the first profile
-dataPathFirefox = os.path.expanduser('~') + '/Library/Application Support/Firefox/Profiles/'
-dataPathFirefox = dataPathFirefox + os.listdir(dataPathFirefox)[0]
-# get copied path to Firefox history database
-dataPathCopyFirefox = os.path.join('.', dbNameFirefox)
+def checkForExistingDataBaseCopies():
+    if os.path.isfile(safariHistoryDatabaseCopyPath) != True and os.path.isfile(firefoxHistoryDatabaseCopyPath) != True:
+        print('Please copy the following files into this directory first: ' + os.getcwd())
+        print(os.path.join(safariHistoryDatabasePath , safariDatabaseFilename))
+        print(os.path.join(firefoxHistoryDatabasePath, firefoxDatabaseFilename))
+        print('Terminating.')
+        quit()
 
-# check for previous DB copies and prompt to copy manually. this prevents locking issues
-historyFilePathSafari = os.path.join(dataPathSafari, dbNameSafari)
-historyFilePathFirefox = os.path.join(dataPathFirefox, dbNameFirefox)
-if os.path.isfile(dataPathCopySafari) != True and os.path.isfile(dataPathCopyFirefox) != True:
-    print('Please copy the following files into this directory first: ' + os.getcwd())
-    print(historyFilePathSafari)
-    print(historyFilePathFirefox)
-    print('Terminating.')
-    quit()
-
-# load Safari DB items
-# visit_time is stored in number of seconds since January 1, 2001 UTC
-def getSafariHistoryItems():
-    connSafari = sqlite3.connect(dataPathCopySafari)
+def getSafariHistoryItemsFromDatabase():
+    # note: visit_time is stored in number of seconds since January 1, 2001 UTC
+    connSafari = sqlite3.connect(safariHistoryDatabaseCopyPath)
     cSaf = connSafari.cursor()
     cSaf.execute(
         'select visit_time, title, url, visit_count '
@@ -42,10 +33,9 @@ def getSafariHistoryItems():
     connSafari.close()
     return rows
 
-# load Firefox DB items
-# visit_time is a UNIX timestamp, so the number of microseconds since January 1, 1970 UTC
-def getFirefoxHistoryItems():
-    connFirefox = sqlite3.connect(dataPathCopyFirefox)
+def getFirefoxHistoryItemsFromDatabase():
+    # note: visit_time is a UNIX timestamp
+    connFirefox = sqlite3.connect(firefoxHistoryDatabaseCopyPath)
     cFir = connFirefox.cursor()
     cFir.execute(
         'select visit_date, title, url, visit_count '
@@ -57,17 +47,22 @@ def getFirefoxHistoryItems():
     connFirefox.close()
     return rows
 
-safariHistoryItems = getSafariHistoryItems()
-print('Found ' + str(len(safariHistoryItems)) + ' Safari history items.')
-for row in safariHistoryItems:
-    print(row)
-    break
+def showItemCountOfDataBases():
+    print('Found ' + str(len(getSafariHistoryItemsFromDatabase())) + ' Safari history items.')
+    print('Found ' + str(len(getFirefoxHistoryItemsFromDatabase())) + ' Firefox history items.')
 
-firefoxHistoryItems = getFirefoxHistoryItems()
-print('Found ' + str(len(firefoxHistoryItems)) + ' Firefox history items.')
-for row in firefoxHistoryItems:
-    print(row)
-    break
+def copyDataFromSafariToFirefox():
+    safariHistoryItems = getSafariHistoryItemsFromDatabase()
+    for safariHistoryRow in safariHistoryItems:
+        #TODO build the sql insert statement
+        #TODO add 978307200 seconds to visit_time to get a UNIX timestamp
+        #TODO generate the url_hash
+        #TODO generate the guid
+        print(safariHistoryRow)
+        break
 
-# prompt to copy manually and clean up
+checkForExistingDataBaseCopies()
+showItemCountOfDataBases()
+copyDataFromSafariToFirefox()
+
 print('Finished. Please clean up the working directory: ' + os.getcwd())

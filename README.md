@@ -13,11 +13,11 @@ With the built-in Firefox Import Wizard, it is currently not possible to import 
 
 ## Requirements
 * access to the history files, e.g. with the macOS Finder or macOS Terminal
-* tested with Python 2.7 and 3.7
+* built with Python 3.7, should work with 2.7 as well
 
 ## Running
 1. clone the repository into a directory you have write access to
-1. run `python2.7 transfer.py` respectively `python3.7 transfer.py`
+1. run `python3.7 transfer.py`
 1. follow the directions to copy the history files
 1. if necessary, run the script again
 1. the script attempts to copy all history entries from Safari to Firefox
