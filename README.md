@@ -3,7 +3,7 @@ Transfer browser history from Safari to Firefox.
 
 With the built-in Firefox Import Wizard, it is currently not possible to import the browser history from Safari to Firefox on macOS. This standalone Python script copies all history entries.
 
-**TODO:** actually copy the history entries; for now it just prints out the count and the first result to verify the functionality :)
+**TODO:** The database seems to be locked and/or messed up when writing, something's not working yet. There are also values which have to be calculated.
 
 ## Caveats
 *IMPORTANT:* This script is currently work-in-progress and might not behave as expected. Use at your own risk.
@@ -21,5 +21,6 @@ With the built-in Firefox Import Wizard, it is currently not possible to import 
 1. follow the directions to copy the history files
 1. if necessary, run the script again
 1. the script attempts to copy all history entries from Safari to Firefox
+1. copy the files back and clean up
 
 Tested with Safari 12.0 and Firefox 64.0 on macOS 10.14 Mojave.

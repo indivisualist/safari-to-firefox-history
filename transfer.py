@@ -20,7 +20,6 @@ def checkForExistingDataBaseCopies():
         quit()
 
 def getSafariHistoryItemsFromDatabase():
-    # note: visit_time is stored in number of seconds since January 1, 2001 UTC
     connSafari = sqlite3.connect(safariHistoryDatabaseCopyPath)
     cSaf = connSafari.cursor()
     cSaf.execute(
@@ -34,7 +33,6 @@ def getSafariHistoryItemsFromDatabase():
     return rows
 
 def getFirefoxHistoryItemsFromDatabase():
-    # note: visit_time is a UNIX timestamp
     connFirefox = sqlite3.connect(firefoxHistoryDatabaseCopyPath)
     cFir = connFirefox.cursor()
     cFir.execute(
@@ -52,14 +50,33 @@ def showItemCountOfDataBases():
     print('Found ' + str(len(getFirefoxHistoryItemsFromDatabase())) + ' Firefox history items.')
 
 def copyDataFromSafariToFirefox():
+    connFirefox = sqlite3.connect(firefoxHistoryDatabaseCopyPath)
+    cFir = connFirefox.cursor()
     safariHistoryItems = getSafariHistoryItemsFromDatabase()
     for safariHistoryRow in safariHistoryItems:
-        #TODO build the sql insert statement
-        #TODO add 978307200 seconds to visit_time to get a UNIX timestamp
+        # note: visit_time stored in seconds since January 1, 2001 UTC. subtraction gets a UNIX timestamp.
+        safariVisitDate = str(float(safariHistoryRow[0]) - float(978307200))
+        safariTitle = str(safariHistoryRow[1])
+        safariUrl = str(safariHistoryRow[2])
+        safariVisitCount = str(safariHistoryRow[3])
+        #TODO generate the guid as string
+        generatedGuid = "123"
         #TODO generate the url_hash
-        #TODO generate the guid
-        print(safariHistoryRow)
-        break
+        generatedUrlHash = "456"
+
+        sql1 = 'insert into moz_places (url, title, visit_count, guid, url_hash) ' \
+            'values ("'+safariUrl+'", "'+safariTitle+'", '+safariVisitCount+', "'+generatedGuid+'", "'+generatedUrlHash+'")'
+        print(sql1) #debug
+        cFir.execute(sql1)
+
+        insertedRowId = str(cFir.lastrowid)
+        sql2 = 'insert into moz_historyvisits (place_id, visit_date) ' \
+            'values ('+insertedRowId+', '+safariVisitDate+')'
+        print(sql2) #debug
+        cFir.execute(sql2)
+
+        break #debug
+    connFirefox.close()
 
 checkForExistingDataBaseCopies()
 showItemCountOfDataBases()
